@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Ylab\PhpMigrater\Diff;
 
-final readonly class DiffResult
+final class DiffResult
 {
     public function __construct(
-        public string $fileName,
-        public string $original,
-        public string $modified,
-        public string $unifiedDiff,
-        public bool $hasChanges,
+        public readonly string $fileName,
+        public readonly string $original,
+        public readonly string $modified,
+        public readonly string $unifiedDiff,
+        public readonly bool $hasChanges,
     ) {}
 
     public function getAddedLineCount(): int

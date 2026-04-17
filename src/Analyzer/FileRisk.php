@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Ylab\PhpMigrater\Analyzer;
 
-final readonly class FileRisk
+final class FileRisk
 {
     public function __construct(
-        public string $filePath,
-        public float $riskScore,
-        public int $issueCount,
+        public readonly string $filePath,
+        public readonly float $riskScore,
+        public readonly int $issueCount,
         /** @var array<string, int> category => count */
-        public array $categories,
+        public readonly array $categories,
     ) {}
 
     /** @return array{file: string, risk_score: float, issue_count: int, categories: array<string, int>} */

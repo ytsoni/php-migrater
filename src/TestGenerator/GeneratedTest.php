@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Ylab\PhpMigrater\TestGenerator;
 
-final readonly class GeneratedTest
+final class GeneratedTest
 {
     public function __construct(
-        public string $testClassName,
-        public string $testCode,
-        public string $targetFilePath,
-        public string $generatorName,
+        public readonly string $testClassName,
+        public readonly string $testCode,
+        public readonly string $targetFilePath,
+        public readonly string $generatorName,
     ) {}
 }

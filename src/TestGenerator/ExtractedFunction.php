@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Ylab\PhpMigrater\TestGenerator;
 
-final readonly class ExtractedFunction
+final class ExtractedFunction
 {
     /**
      * @param array<array{name: string, type: ?string, default: bool}> $params
      */
     public function __construct(
-        public string $name,
-        public ?string $className,
-        public ?string $namespace,
-        public array $params,
-        public ?string $returnType,
-        public bool $isStatic,
-        public string $visibility,
-        public int $startLine,
-        public int $endLine,
+        public readonly string $name,
+        public readonly ?string $className,
+        public readonly ?string $namespace,
+        public readonly array $params,
+        public readonly ?string $returnType,
+        public readonly bool $isStatic,
+        public readonly string $visibility,
+        public readonly int $startLine,
+        public readonly int $endLine,
     ) {}
 
     public function isMethod(): bool

@@ -6,18 +6,18 @@ namespace Ylab\PhpMigrater\Analyzer;
 
 use Ylab\PhpMigrater\Config\PhpVersion;
 
-final readonly class Issue
+final class Issue
 {
     public function __construct(
-        public string $file,
-        public int $line,
-        public int $column,
-        public Severity $severity,
-        public string $message,
-        public IssueCategory $category,
-        public ?PhpVersion $affectedFrom = null,
-        public ?PhpVersion $affectedTo = null,
-        public ?string $suggestedFixerClass = null,
+        public readonly string $file,
+        public readonly int $line,
+        public readonly int $column,
+        public readonly Severity $severity,
+        public readonly string $message,
+        public readonly IssueCategory $category,
+        public readonly ?PhpVersion $affectedFrom = null,
+        public readonly ?PhpVersion $affectedTo = null,
+        public readonly ?string $suggestedFixerClass = null,
     ) {}
 
     /** @return array<string, mixed> */
