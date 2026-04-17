@@ -44,6 +44,36 @@ final class NestedTernaryFixerTest extends TestCase
         $this->assertSame($code, $result);
     }
 
+    public function testFixWrapsNestedTernaryInParentheses(): void
+    {
+        $code = '<?php $x = $a ? $b : $c ? $d : $e;';
+        $issue = $this->makeIssue(IssueCategory::NestedTernary);
+        $result = $this->fixer->fix($code, [$issue]);
+
+        $this->assertStringContainsString('(', $result);
+        $this->assertNotSame($code, $result);
+    }
+
+    public function testFixPreservesSimpleTernary(): void
+    {
+        $code = '<?php $x = $a ? $b : $c;';
+        $issue = $this->makeIssue(IssueCategory::NestedTernary);
+        $result = $this->fixer->fix($code, [$issue]);
+
+        // Simple ternary — regex shouldn't match nested pattern
+        $this->assertSame($code, $result);
+    }
+
+    public function testGetDescription(): void
+    {
+        $this->assertNotEmpty($this->fixer->getDescription());
+    }
+
+    public function testGetPriority(): void
+    {
+        $this->assertSame(70, $this->fixer->getPriority());
+    }
+
     private function makeIssue(IssueCategory $category, int $line = 1): Issue
     {
         return new Issue(

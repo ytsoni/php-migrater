@@ -38,6 +38,97 @@ final class StringToNumberVisitorTest extends TestCase
         $this->assertCount(0, $issues);
     }
 
+    public function testDetectsSmallerOperator(): void
+    {
+        $code = '<?php $x = "foo" < 5;';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(1, $issues);
+        $this->assertSame(IssueCategory::StringToNumber, $issues[0]->category);
+    }
+
+    public function testDetectsSmallerOrEqualOperator(): void
+    {
+        $code = '<?php $x = "foo" <= 5;';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(1, $issues);
+    }
+
+    public function testDetectsGreaterOperator(): void
+    {
+        $code = '<?php $x = 10 > "bar";';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(1, $issues);
+    }
+
+    public function testDetectsGreaterOrEqualOperator(): void
+    {
+        $code = '<?php $x = 10 >= "bar";';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(1, $issues);
+    }
+
+    public function testDetectsSpaceshipOperator(): void
+    {
+        $code = '<?php $x = "abc" <=> 0;';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(1, $issues);
+    }
+
+    public function testIgnoresNumericStringComparison(): void
+    {
+        $code = '<?php $x = "42" < 100;';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(0, $issues);
+    }
+
+    public function testIgnoresStringStringComparison(): void
+    {
+        $code = '<?php $x = "abc" < "def";';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(0, $issues);
+    }
+
+    public function testIgnoresNumberNumberComparison(): void
+    {
+        $code = '<?php $x = 1 < 2;';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(0, $issues);
+    }
+
+    public function testDetectsReverseOrder(): void
+    {
+        // Number on right, non-numeric string on left
+        $code = '<?php $x = "hello" > 0;';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(1, $issues);
+    }
+
+    public function testIgnoresAdditionOperator(): void
+    {
+        // Only comparison operators should trigger
+        $code = '<?php $x = "foo" + 5;';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(0, $issues);
+    }
+
+    public function testDetectsFloatComparison(): void
+    {
+        $code = '<?php $x = "foo" < 3.14;';
+        $issues = $this->analyze($code);
+
+        $this->assertCount(1, $issues);
+    }
+
     /**
      * @return \Ylab\PhpMigrater\Analyzer\Issue[]
      */
