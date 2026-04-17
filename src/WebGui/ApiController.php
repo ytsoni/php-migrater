@@ -6,7 +6,6 @@ namespace Ylab\PhpMigrater\WebGui;
 
 use Ylab\PhpMigrater\Analyzer\Issue;
 use Ylab\PhpMigrater\Config\Configuration;
-use Ylab\PhpMigrater\Plugin\EventDispatcher;
 use Ylab\PhpMigrater\Plugin\PluginRegistry;
 use Ylab\PhpMigrater\Reporter\JsonReporter;
 use Ylab\PhpMigrater\Reporter\MigrationReport;
@@ -17,13 +16,11 @@ use Ylab\PhpMigrater\Reporter\MigrationReport;
 final class ApiController
 {
     private readonly PluginRegistry $registry;
-    private readonly EventDispatcher $dispatcher;
 
     public function __construct(
         private readonly Configuration $config,
     ) {
-        $this->dispatcher = new EventDispatcher();
-        $this->registry = new PluginRegistry($this->config, $this->dispatcher);
+        $this->registry = new PluginRegistry($this->config);
     }
 
     public function handle(string $method, string $path): string

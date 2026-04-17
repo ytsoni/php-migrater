@@ -35,7 +35,7 @@ class TestGenerateCommand extends Command
 
         $config = Configuration::load($configFile);
         $dispatcher = new EventDispatcher();
-        $registry = new PluginRegistry($config, $dispatcher);
+        $registry = new PluginRegistry($config);
 
         $generators = $registry->getTestGenerators();
         $finder = $config->createFinder();

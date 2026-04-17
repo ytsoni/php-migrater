@@ -104,7 +104,7 @@ final class ConsoleReporter implements ReporterInterface
                 foreach ($topRisks as $risk) {
                     $lines[] = sprintf(
                         '  %.1f  %s (%d issues)',
-                        $risk->score,
+                        $risk->riskScore,
                         $risk->filePath,
                         $risk->issueCount,
                     );

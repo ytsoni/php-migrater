@@ -65,7 +65,7 @@ final class CharacterizationTestGenerator implements TestGeneratorInterface
     /**
      * @param array<ExtractedFunction> $functions
      */
-    private function generateStandaloneTests(array $functions, string $filePath): ?GeneratedTest
+    private function generateStandaloneTests(array $functions, string $filePath): GeneratedTest
     {
         $baseName = ucfirst(pathinfo($filePath, PATHINFO_FILENAME));
         $testClassName = $baseName . 'CharacterizationTest';

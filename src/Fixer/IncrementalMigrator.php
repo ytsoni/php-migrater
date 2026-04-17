@@ -37,7 +37,8 @@ final class IncrementalMigrator
         private readonly EventDispatcher $eventDispatcher,
         private readonly Configuration $config,
     ) {
-        $this->stateFile = $this->config->getStateFile() ?? self::STATE_FILE;
+        $stateFile = $this->config->getStateFile();
+        $this->stateFile = $stateFile !== '' ? $stateFile : self::STATE_FILE;
         $this->loadState();
     }
 
@@ -100,7 +101,7 @@ final class IncrementalMigrator
 
                 if ($browserDiff) {
                     $renderer = new BrowserRenderer();
-                    $action = $renderer->showAndWait($diff, $filePath);
+                    $action = $renderer->renderAndWait($diff);
                 } else {
                     $renderer = new TerminalRenderer();
                     $action = $renderer->renderInteractive(

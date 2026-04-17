@@ -30,7 +30,7 @@ final class PluginRegistry
 
     private bool $resolved = false;
 
-    public function __construct(?Configuration $config = null, ?EventDispatcher $dispatcher = null)
+    public function __construct(?Configuration $config = null)
     {
         // Always register the core plugin
         $this->register(new CorePlugin());

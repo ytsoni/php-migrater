@@ -38,6 +38,6 @@ final class FileChunker
         }
 
         // Remove empty chunks
-        return array_values(array_filter($chunks, fn($c) => !empty($c)));
+        return array_values(array_filter($chunks, fn($c) => $c !== []));
     }
 }

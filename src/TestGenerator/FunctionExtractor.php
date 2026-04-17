@@ -15,16 +15,11 @@ use PhpParser\Node\Stmt;
  */
 final class FunctionExtractor
 {
-    /** @var array<ExtractedFunction> */
-    private array $functions = [];
-
     /**
      * @return array<ExtractedFunction>
      */
     public function extract(string $sourceCode): array
     {
-        $this->functions = [];
-
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
 
         try {
@@ -147,39 +142,5 @@ final class FunctionExtractor
         $traverser->traverse($stmts);
 
         return $visitor->functions;
-    }
-}
-
-final readonly class ExtractedFunction
-{
-    /**
-     * @param array<array{name: string, type: ?string, default: bool}> $params
-     */
-    public function __construct(
-        public string $name,
-        public ?string $className,
-        public ?string $namespace,
-        public array $params,
-        public ?string $returnType,
-        public bool $isStatic,
-        public string $visibility,
-        public int $startLine,
-        public int $endLine,
-    ) {}
-
-    public function isMethod(): bool
-    {
-        return $this->className !== null;
-    }
-
-    public function getFullClassName(): ?string
-    {
-        if ($this->className === null) {
-            return null;
-        }
-
-        return $this->namespace !== null
-            ? $this->namespace . '\\' . $this->className
-            : $this->className;
     }
 }

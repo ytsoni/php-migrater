@@ -45,7 +45,7 @@ class MigrateCommand extends Command
 
         $config = Configuration::load($configFile);
         $dispatcher = new EventDispatcher();
-        $registry = new PluginRegistry($config, $dispatcher);
+        $registry = new PluginRegistry($config);
 
         $report = new MigrationReport($config->getSourceVersion(), $config->getTargetVersion());
 

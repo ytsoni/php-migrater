@@ -14,19 +14,6 @@ use Ylab\PhpMigrater\Fixer\FixerInterface;
  */
 final class ResourceToObjectFixer implements FixerInterface
 {
-    /** @var array<string, string[]> Extension => object class names in PHP 8.0+ */
-    private const RESOURCE_CLASSES = [
-        'CurlHandle',
-        'CurlMultiHandle',
-        'CurlShareHandle',
-        'GdImage',
-        'OpenSSLAsymmetricKey',
-        'OpenSSLCertificate',
-        'OpenSSLCertificateSigningRequest',
-        'Socket',
-        'AddressInfo',
-    ];
-
     public function getName(): string
     {
         return 'resource_to_object';

@@ -143,9 +143,7 @@ final class RectorAdapter
             if ($version === $config->getSourceVersion()) {
                 continue;
             }
-            if (isset(self::VERSION_SETS[$version->value])) {
-                $sets[] = self::VERSION_SETS[$version->value];
-            }
+            $sets[] = self::VERSION_SETS[$version->value];
         }
 
         $setsCode = implode(",\n            ", $sets);

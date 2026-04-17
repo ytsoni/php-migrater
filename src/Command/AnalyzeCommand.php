@@ -43,7 +43,7 @@ class AnalyzeCommand extends Command
 
         $config = Configuration::load($configFile);
         $dispatcher = new EventDispatcher();
-        $registry = new PluginRegistry($config, $dispatcher);
+        $registry = new PluginRegistry($config);
 
         $analyzers = $registry->getAnalyzers();
         $finder = $config->createFinder();

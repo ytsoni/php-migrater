@@ -83,11 +83,3 @@ final class TerminalRenderer
         };
     }
 }
-
-enum FixAction
-{
-    case Apply;
-    case Skip;
-    case ApplyAll;
-    case Quit;
-}

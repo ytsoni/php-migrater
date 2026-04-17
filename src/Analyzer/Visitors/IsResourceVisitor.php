@@ -24,12 +24,6 @@ final class IsResourceVisitor extends NodeVisitorAbstract
     private array $issues = [];
     private string $filePath = '';
 
-    /** Resources migrated to objects by PHP version */
-    private const MIGRATED_RESOURCES = [
-        '8.0' => ['curl', 'curl_multi', 'curl_share', 'gd', 'openssl', 'shmop', 'socket', 'sysvmsg', 'sysvsem', 'sysvshm', 'xml'],
-        '8.1' => ['ftp', 'imap', 'ldap', 'pgsql', 'pspell'],
-    ];
-
     public function setFilePath(string $filePath): void
     {
         $this->filePath = $filePath;

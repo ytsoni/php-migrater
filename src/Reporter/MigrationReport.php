@@ -131,7 +131,7 @@ final class MigrationReport
     {
         $counts = ['error' => 0, 'warning' => 0, 'info' => 0];
         foreach ($this->getAllIssues() as $issue) {
-            $counts[$issue->severity->value] = ($counts[$issue->severity->value] ?? 0) + 1;
+            $counts[$issue->severity->value]++;
         }
         return $counts;
     }
