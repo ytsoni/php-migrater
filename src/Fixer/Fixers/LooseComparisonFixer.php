@@ -60,6 +60,7 @@ final class LooseComparisonFixer implements FixerInterface
 
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new class($affectedLines) extends NodeVisitorAbstract {
+            /** @param list<int> $lines */
             public function __construct(private readonly array $lines) {}
 
             public function leaveNode(Node $node): ?Node

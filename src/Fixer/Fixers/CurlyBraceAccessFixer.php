@@ -46,6 +46,6 @@ final class CurlyBraceAccessFixer implements FixerInterface
             '/(\$[\w>-]+)\{([^}]+)\}/',
             '$1[$2]',
             $sourceCode,
-        );
+        ) ?? $sourceCode;
     }
 }

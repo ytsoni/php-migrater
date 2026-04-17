@@ -20,6 +20,7 @@ final readonly class Issue
         public ?string $suggestedFixerClass = null,
     ) {}
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [

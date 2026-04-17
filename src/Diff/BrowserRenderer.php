@@ -58,7 +58,7 @@ final class BrowserRenderer
                 }
             }
 
-            $decision = file_exists($decisionFile) ? trim(file_get_contents($decisionFile)) : 'skip';
+            $decision = file_exists($decisionFile) ? trim((string) file_get_contents($decisionFile)) : 'skip';
 
             $process->stop(2);
 
@@ -216,6 +216,9 @@ PHP;
     private function findAvailablePort(): int
     {
         $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if ($sock === false) {
+            return 8090;
+        }
         socket_bind($sock, '127.0.0.1', 0);
         socket_getsockname($sock, $addr, $port);
         socket_close($sock);
@@ -227,7 +230,7 @@ PHP;
         if (!is_dir($dir)) {
             return;
         }
-        $files = scandir($dir);
+        $files = is_array($scanResult = scandir($dir)) ? $scanResult : [];
         foreach ($files as $file) {
             if ($file === '.' || $file === '..') {
                 continue;

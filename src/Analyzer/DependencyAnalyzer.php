@@ -45,7 +45,11 @@ final class DependencyAnalyzer implements AnalyzerInterface
             ];
         }
 
-        $lockData = json_decode(file_get_contents($lockFile), true);
+        $lockContent = file_get_contents($lockFile);
+        if ($lockContent === false) {
+            return [];
+        }
+        $lockData = json_decode($lockContent, true);
         if (!is_array($lockData)) {
             return [];
         }
@@ -85,6 +89,9 @@ final class DependencyAnalyzer implements AnalyzerInterface
 
         // Handle simple constraints: >=7.0, ^7.0, ~7.0, >=7.0 <8.0
         $parts = preg_split('/\s*\|\|\s*/', $constraint);
+        if (!is_array($parts)) {
+            return false;
+        }
         foreach ($parts as $part) {
             if ($this->satisfiesSingleConstraint($targetNum, trim($part))) {
                 return true;
@@ -98,7 +105,7 @@ final class DependencyAnalyzer implements AnalyzerInterface
     {
         // Handle compound constraints: >=7.0 <9.0
         $subParts = preg_split('/\s+/', $constraint);
-        if (count($subParts) > 1) {
+        if (is_array($subParts) && count($subParts) > 1) {
             foreach ($subParts as $sub) {
                 if (!$this->satisfiesSingleConstraint($target, trim($sub))) {
                     return false;

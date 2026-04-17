@@ -54,7 +54,11 @@ final class PluginRegistry
             return;
         }
 
-        $installed = json_decode(file_get_contents($installedPath), true);
+        $content = file_get_contents($installedPath);
+        if ($content === false) {
+            return;
+        }
+        $installed = json_decode($content, true);
         $packages = $installed['packages'] ?? $installed;
 
         foreach ($packages as $package) {

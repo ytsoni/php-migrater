@@ -28,6 +28,7 @@ final class MigrationReport
         $this->startTime = microtime(true);
     }
 
+    /** @param array<Issue> $issues */
     public function addFileIssues(string $filePath, array $issues): void
     {
         $this->issuesByFile[$filePath] = $issues;

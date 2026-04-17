@@ -46,6 +46,7 @@ final class VersionProfile
         return isset($this->features[$feature]);
     }
 
+    /** @return array<string, string> */
     public function toArray(): array
     {
         $result = [];

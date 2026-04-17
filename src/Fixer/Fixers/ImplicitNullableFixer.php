@@ -91,7 +91,9 @@ final class ImplicitNullableFixer implements FixerInterface
                     }
 
                     // Make it nullable
-                    $param->type = new Node\NullableType($param->type);
+                    if ($param->type instanceof Node\Identifier || $param->type instanceof Node\Name) {
+                        $param->type = new Node\NullableType($param->type);
+                    }
                 }
 
                 return null;

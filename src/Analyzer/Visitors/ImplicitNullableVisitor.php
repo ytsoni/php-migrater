@@ -70,7 +70,7 @@ final class ImplicitNullableVisitor extends NodeVisitorAbstract
                 }
             }
 
-            $paramName = $param->var instanceof Node\Expr\Variable ? $param->var->name : '?';
+            $paramName = $param->var instanceof Node\Expr\Variable && is_string($param->var->name) ? $param->var->name : '?';
             $typeName = $this->getTypeName($param->type);
 
             $this->issues[] = new Issue(

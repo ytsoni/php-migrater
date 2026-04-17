@@ -106,7 +106,7 @@ final class FunctionExtractor
                 $result = [];
                 foreach ($params as $param) {
                     $result[] = [
-                        'name' => '$' . ($param->var instanceof Node\Expr\Variable ? $param->var->name : 'unknown'),
+                        'name' => '$' . ($param->var instanceof Node\Expr\Variable && is_string($param->var->name) ? $param->var->name : 'unknown'),
                         'type' => $this->nodeTypeToString($param->type),
                         'default' => $param->default !== null,
                     ];

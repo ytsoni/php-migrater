@@ -14,6 +14,7 @@ final readonly class FileRisk
         public array $categories,
     ) {}
 
+    /** @return array{file: string, risk_score: float, issue_count: int, categories: array<string, int>} */
     public function toArray(): array
     {
         return [

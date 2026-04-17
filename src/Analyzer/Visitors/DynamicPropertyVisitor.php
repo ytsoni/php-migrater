@@ -26,7 +26,7 @@ final class DynamicPropertyVisitor extends NodeVisitorAbstract
     private array $issues = [];
     private string $filePath = '';
 
-    /** @var array<string, list<string>> class name => declared properties */
+    /** @var array<string, list<string>|null> class name => declared properties (null = skip) */
     private array $classProperties = [];
     private ?string $currentClass = null;
 
@@ -48,15 +48,19 @@ final class DynamicPropertyVisitor extends NodeVisitorAbstract
     {
         // Track class declarations and their properties
         if ($node instanceof Node\Stmt\Class_) {
-            $className = $node->namespacedName?->toString() ?? $node->name?->toString() ?? '<anonymous>';
+            $className = $node->name?->toString() ?? '<anonymous>';
+            if (isset($node->namespacedName)) {
+                $className = $node->namespacedName->toString();
+            }
             $this->currentClass = $className;
             $this->classProperties[$className] = [];
 
             // Check if class has #[AllowDynamicProperties] or uses __get/__set
             foreach ($node->attrGroups as $attrGroup) {
                 foreach ($attrGroup->attrs as $attr) {
-                    if ($attr->name->toString() === 'AllowDynamicProperties') {
-                        // Class explicitly allows dynamic properties
+                    if (ltrim($attr->name->toString(), '\\') === 'AllowDynamicProperties') {
+                        // Class explicitly allows dynamic properties — mark as skip
+                        $this->classProperties[$className] = null;
                         return null;
                     }
                 }
@@ -82,7 +86,7 @@ final class DynamicPropertyVisitor extends NodeVisitorAbstract
         // Track property declarations in constructor promotion
         if ($node instanceof Node\Stmt\ClassMethod && $node->name->toString() === '__construct' && $this->currentClass !== null) {
             foreach ($node->params as $param) {
-                if ($param->flags !== 0) { // promoted property
+                if ($param->flags !== 0 && $param->var instanceof Node\Expr\Variable && is_string($param->var->name)) { // promoted property
                     $this->classProperties[$this->currentClass][] = $param->var->name;
                 }
             }

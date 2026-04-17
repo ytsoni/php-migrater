@@ -9,6 +9,7 @@ final class RiskReport
     /** @var array<string, FileRisk> Keyed by file path */
     private array $fileRisks = [];
 
+    /** @param array<string, int> $categories */
     public function addFileRisk(string $filePath, float $riskScore, int $issueCount, array $categories): void
     {
         $this->fileRisks[$filePath] = new FileRisk($filePath, $riskScore, $issueCount, $categories);
@@ -63,6 +64,7 @@ final class RiskReport
         return $summary;
     }
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [

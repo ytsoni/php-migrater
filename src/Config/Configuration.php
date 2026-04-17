@@ -17,6 +17,11 @@ final class Configuration
     /** @var class-string[] */
     private array $plugins;
 
+    /**
+     * @param list<string> $paths
+     * @param list<string> $excludePaths
+     * @param list<class-string> $plugins
+     */
     public function __construct(
         private readonly PhpVersion $sourceVersion,
         private readonly PhpVersion $targetVersion,
@@ -76,6 +81,7 @@ final class Configuration
         return self::fromFile($configPath);
     }
 
+    /** @param list<string> $paths */
     public static function fromDefaults(PhpVersion $source, PhpVersion $target, array $paths = []): self
     {
         return new self(
@@ -155,6 +161,7 @@ final class Configuration
         return $this->stateFile;
     }
 
+    /** @param list<string>|null $paths */
     public function createFinder(?array $paths = null): Finder
     {
         $finder = Finder::create()

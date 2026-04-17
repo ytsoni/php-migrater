@@ -52,7 +52,7 @@ final class NestedTernaryFixer implements FixerInterface
                 return $matches[1] . ' (' . trim($matches[2]) . ')';
             },
             $sourceCode,
-        );
+        ) ?? $sourceCode;
 
         return $sourceCode;
     }

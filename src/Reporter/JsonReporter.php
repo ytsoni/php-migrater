@@ -41,6 +41,6 @@ final class JsonReporter implements ReporterInterface
             );
         }
 
-        return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}';
     }
 }

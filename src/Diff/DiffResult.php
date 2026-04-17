@@ -16,14 +16,15 @@ final readonly class DiffResult
 
     public function getAddedLineCount(): int
     {
-        return preg_match_all('/^\+[^+]/m', $this->unifiedDiff);
+        return (int) preg_match_all('/^\+[^+]/m', $this->unifiedDiff);
     }
 
     public function getRemovedLineCount(): int
     {
-        return preg_match_all('/^-[^-]/m', $this->unifiedDiff);
+        return (int) preg_match_all('/^-[^-]/m', $this->unifiedDiff);
     }
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [

@@ -82,11 +82,12 @@ final class ApiController
         ]);
     }
 
+    /** @param array<string, mixed> $data */
     private function jsonResponse(array $data, int $statusCode = 200): string
     {
         http_response_code($statusCode);
         header('Content-Type: application/json');
         header('Access-Control-Allow-Origin: *');
-        return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}';
     }
 }

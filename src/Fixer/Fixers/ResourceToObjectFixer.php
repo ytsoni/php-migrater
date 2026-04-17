@@ -49,7 +49,7 @@ final class ResourceToObjectFixer implements FixerInterface
                 return "({$var} instanceof \\CurlHandle || {$var} instanceof \\GdImage || is_resource({$var}))";
             },
             $sourceCode,
-        );
+        ) ?? $sourceCode;
 
         return $sourceCode;
     }
