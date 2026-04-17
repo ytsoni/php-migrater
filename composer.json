@@ -1,5 +1,5 @@
 {
-    "name": "ylab/php-migrater",
+    "name": "ytsoni/php-migrater",
     "description": "PHP Legacy Migration Orchestrator — analyze, test, and fix PHP 5.x–8.x codebases for modern PHP versions",
     "type": "library",
     "license": "GPL-3.0-or-later",

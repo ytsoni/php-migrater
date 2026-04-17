@@ -27,7 +27,7 @@ A comprehensive PHP migration toolkit that analyzes, tests, and upgrades legacy 
 ## Installation
 
 ```bash
-composer require ylab/php-migrater --dev
+composer require ytsoni/php-migrater --dev
 ```
 
 ## Quick Start
@@ -35,7 +35,7 @@ composer require ylab/php-migrater --dev
 ### 1. Create a configuration file
 
 ```bash
-cp vendor/ylab/php-migrater/php-migrater.php.dist php-migrater.php
+cp vendor/ytsoni/php-migrater/php-migrater.php.dist php-migrater.php
 ```
 
 Edit `php-migrater.php`:
