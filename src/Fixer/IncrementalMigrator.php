@@ -14,6 +14,8 @@ use Ylab\PhpMigrater\Diff\BrowserRenderer;
 use Ylab\PhpMigrater\Plugin\Event;
 use Ylab\PhpMigrater\Plugin\EventDispatcher;
 use Ylab\PhpMigrater\Plugin\EventType;
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -100,8 +102,13 @@ final class IncrementalMigrator
                     $renderer = new BrowserRenderer();
                     $action = $renderer->showAndWait($diff, $filePath);
                 } else {
-                    $renderer = new TerminalRenderer($output);
-                    $action = $renderer->renderInteractive($diff, $filePath);
+                    $renderer = new TerminalRenderer();
+                    $action = $renderer->renderInteractive(
+                        $diff,
+                        new ArgvInput(),
+                        $output,
+                        new QuestionHelper(),
+                    );
                 }
             }
 

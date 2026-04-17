@@ -18,6 +18,8 @@ enum EventType: string
     case FixApproved = 'fix_approved';
     case FixRejected = 'fix_rejected';
     case FixRolledBack = 'fix_rolled_back';
+    case BeforeFileFix = 'before_file_fix';
+    case AfterFileFix = 'after_file_fix';
 }
 
 final class Event

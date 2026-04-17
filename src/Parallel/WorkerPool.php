@@ -132,12 +132,13 @@ final class WorkerPool
                         foreach ($decoded as $filePath => $issueData) {
                             $issues = array_map(
                                 fn($data) => new Issue(
-                                    message: $data['message'],
-                                    severity: \Ylab\PhpMigrater\Analyzer\Severity::from($data['severity']),
-                                    category: \Ylab\PhpMigrater\Analyzer\IssueCategory::from($data['category']),
-                                    line: $data['line'],
                                     file: $data['file'],
-                                    fixerClass: $data['fixerClass'] ?? null,
+                                    line: $data['line'],
+                                    column: $data['column'] ?? 0,
+                                    severity: \Ylab\PhpMigrater\Analyzer\Severity::from($data['severity']),
+                                    message: $data['message'],
+                                    category: \Ylab\PhpMigrater\Analyzer\IssueCategory::from($data['category']),
+                                    suggestedFixerClass: $data['suggested_fixer'] ?? null,
                                 ),
                                 $issueData,
                             );
