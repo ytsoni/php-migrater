@@ -1,0 +1,12 @@
+.phpunit.result.cache
+.phpunit.cache/
+/vendor/
+/composer.lock
+/.php-migrater-state.json
+/report/
+/phpstan.neon
+/phpunit.xml
+/.idea/
+/.vscode/
+*.swp
+*.swo

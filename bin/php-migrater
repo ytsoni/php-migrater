@@ -1,0 +1,44 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+// Autoloader resolution for both direct and vendor-installed usage
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+
+$autoloaderFound = false;
+foreach ($autoloadPaths as $autoload) {
+    if (file_exists($autoload)) {
+        require_once $autoload;
+        $autoloaderFound = true;
+        break;
+    }
+}
+
+if (!$autoloaderFound) {
+    fwrite(STDERR, "Error: Could not find Composer autoloader. Run 'composer install' first.\n");
+    exit(1);
+}
+
+use Symfony\Component\Console\Application;
+use Ylab\PhpMigrater\Command\AnalyzeCommand;
+use Ylab\PhpMigrater\Command\FixCommand;
+use Ylab\PhpMigrater\Command\MigrateCommand;
+use Ylab\PhpMigrater\Command\ReportCommand;
+use Ylab\PhpMigrater\Command\ServeCommand;
+use Ylab\PhpMigrater\Command\TestGenerateCommand;
+
+$application = new Application('PHP Migrater', '0.1.0');
+
+$application->add(new AnalyzeCommand());
+$application->add(new FixCommand());
+$application->add(new MigrateCommand());
+$application->add(new ReportCommand());
+$application->add(new ServeCommand());
+$application->add(new TestGenerateCommand());
+
+$application->setDefaultCommand('migrate');
+$application->run();

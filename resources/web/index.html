@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHP Migrater — Dashboard</title>
+<style>
+  :root { --bg: #0f0f1a; --surface: #1a1a2e; --card: #222240; --text: #e0e0f0; --accent: #6c63ff; --accent2: #00d4aa; --error: #ff6b6b; --warning: #ffd93d; --info: #6bcfff; --border: #333355; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 1.4rem; color: var(--accent); }
+  .header .version { color: #888; font-size: 0.9rem; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+  .stat-card .label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-card .value { font-size: 2rem; font-weight: 700; margin-top: 0.25rem; }
+  .stat-card .value.errors { color: var(--error); }
+  .stat-card .value.warnings { color: var(--warning); }
+  .stat-card .value.info { color: var(--info); }
+  .stat-card .value.ok { color: var(--accent2); }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .section h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 1rem; }
+
+  .btn { background: var(--accent); color: #fff; border: none; padding: 0.6rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); }
+  th { font-size: 0.8rem; text-transform: uppercase; color: #888; }
+
+  .severity-error { color: var(--error); }
+  .severity-warning { color: var(--warning); }
+  .severity-info { color: var(--info); }
+
+  .loading { text-align: center; padding: 3rem; color: #888; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  details { margin: 0.5rem 0; }
+  details summary { cursor: pointer; padding: 0.5rem; border-radius: 4px; }
+  details summary:hover { background: rgba(108,99,255,0.1); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>PHP Migrater</h1>
+  <span class="version" id="version-info">Loading...</span>
+</div>
+
+<div class="container">
+  <div id="controls" style="margin-bottom: 1.5rem;">
+    <button class="btn" id="btn-analyze" onclick="runAnalysis()">Run Analysis</button>
+    <button class="btn btn-outline" id="btn-refresh" onclick="loadStatus()" style="margin-left: 0.5rem;">Refresh Status</button>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat-card"><div class="label">Files Analyzed</div><div class="value ok" id="stat-files">—</div></div>
+    <div class="stat-card"><div class="label">Total Issues</div><div class="value" id="stat-issues">—</div></div>
+    <div class="stat-card"><div class="label">Errors</div><div class="value errors" id="stat-errors">—</div></div>
+    <div class="stat-card"><div class="label">Warnings</div><div class="value warnings" id="stat-warnings">—</div></div>
+    <div class="stat-card"><div class="label">Info</div><div class="value info" id="stat-info">—</div></div>
+  </div>
+
+  <div class="section" id="categories-section" style="display:none;">
+    <h2>Issues by Category</h2>
+    <table id="categories-table">
+      <thead><tr><th>Category</th><th>Count</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="section" id="files-section" style="display:none;">
+    <h2>Files with Issues</h2>
+    <div id="files-list"></div>
+  </div>
+</div>
+
+<script>
+async function loadStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    document.getElementById('version-info').textContent =
+      `PHP ${data.source} → ${data.target}`;
+  } catch (e) {
+    document.getElementById('version-info').textContent = 'Connection error';
+  }
+}
+
+async function runAnalysis() {
+  const btn = document.getElementById('btn-analyze');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analyzing...';
+
+  try {
+    const res = await fetch('/api/analyze');
+    const data = await res.json();
+
+    document.getElementById('stat-files').textContent = data.summary.filesAnalyzed;
+    document.getElementById('stat-issues').textContent = data.summary.totalIssues;
+    document.getElementById('stat-errors').textContent = data.severities.error || 0;
+    document.getElementById('stat-warnings').textContent = data.severities.warning || 0;
+    document.getElementById('stat-info').textContent = data.severities.info || 0;
+
+    // Categories
+    const catSection = document.getElementById('categories-section');
+    const catBody = document.querySelector('#categories-table tbody');
+    catBody.innerHTML = '';
+    if (data.categories && Object.keys(data.categories).length > 0) {
+      catSection.style.display = '';
+      for (const [cat, count] of Object.entries(data.categories)) {
+        catBody.innerHTML += `<tr><td>${esc(cat)}</td><td>${count}</td></tr>`;
+      }
+    }
+
+    // Files
+    const filesSection = document.getElementById('files-section');
+    const filesList = document.getElementById('files-list');
+    filesList.innerHTML = '';
+    if (data.files && Object.keys(data.files).length > 0) {
+      filesSection.style.display = '';
+      for (const [file, issues] of Object.entries(data.files)) {
+        let issueRows = issues.map(i =>
+          `<tr class="severity-${i.severity}"><td>${i.line}</td><td>${i.severity}</td><td>${esc(i.message)}</td><td>${esc(i.category)}</td></tr>`
+        ).join('');
+        filesList.innerHTML += `
+          <details>
+            <summary>${esc(file)} (${issues.length} issues)</summary>
+            <table><thead><tr><th>Line</th><th>Severity</th><th>Message</th><th>Category</th></tr></thead>
+            <tbody>${issueRows}</tbody></table>
+          </details>`;
+      }
+    }
+  } catch (e) {
+    alert('Analysis failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Analysis';
+  }
+}
+
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+loadStatus();
+</script>
+</body>
+</html>

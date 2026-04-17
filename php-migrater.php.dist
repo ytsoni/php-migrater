@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * PHP-Migrater Configuration File
+ *
+ * Copy this file to `php-migrater.php` in your project root and customize.
+ */
+return [
+    // Source PHP version (the version your code currently targets)
+    'source' => '5.6',
+
+    // Target PHP version (the version you want to migrate to)
+    'target' => '8.3',
+
+    // Paths to scan (relative to project root)
+    'paths' => [
+        'src',
+        'app',
+        'lib',
+    ],
+
+    // Paths to exclude
+    'exclude' => [
+        'vendor',
+        'node_modules',
+        'tests',
+        'cache',
+    ],
+
+    // Output directory for HTML/JSON reports
+    'report_output' => 'report',
+
+    // Output directory for generated migration tests
+    'test_output' => 'tests/migration',
+
+    // Number of parallel workers (1 = sequential)
+    'parallel' => 4,
+
+    // Custom plugin classes to register
+    'plugins' => [
+        // \App\MyCustomPlugin::class,
+    ],
+
+    // Port for the web GUI (`php-migrater serve`)
+    'web_port' => 8080,
+
+    // State file for incremental migration progress
+    'state_file' => '.php-migrater-state.json',
+];

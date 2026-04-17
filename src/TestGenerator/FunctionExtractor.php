@@ -1,0 +1,185 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Ylab\PhpMigrater\TestGenerator;
+
+use PhpParser\Node;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitorAbstract;
+use PhpParser\ParserFactory;
+use PhpParser\Node\Stmt;
+
+/**
+ * Extracts functions and methods from source code for test generation.
+ */
+final class FunctionExtractor
+{
+    /** @var array<ExtractedFunction> */
+    private array $functions = [];
+
+    /**
+     * @return array<ExtractedFunction>
+     */
+    public function extract(string $sourceCode): array
+    {
+        $this->functions = [];
+
+        $parser = (new ParserFactory())->createForNewestSupportedVersion();
+
+        try {
+            $stmts = $parser->parse($sourceCode);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        if ($stmts === null) {
+            return [];
+        }
+
+        $traverser = new NodeTraverser();
+        $visitor = new class extends NodeVisitorAbstract {
+            /** @var array<ExtractedFunction> */
+            public array $functions = [];
+            private ?string $currentClass = null;
+            private ?string $currentNamespace = null;
+
+            public function enterNode(Node $node): ?int
+            {
+                if ($node instanceof Stmt\Namespace_) {
+                    $this->currentNamespace = $node->name?->toString();
+                    return null;
+                }
+
+                if ($node instanceof Stmt\Class_ || $node instanceof Stmt\Trait_) {
+                    $this->currentClass = $node->name?->name;
+                    return null;
+                }
+
+                if ($node instanceof Stmt\Function_) {
+                    $this->functions[] = new ExtractedFunction(
+                        name: $node->name->name,
+                        className: null,
+                        namespace: $this->currentNamespace,
+                        params: $this->extractParams($node->params),
+                        returnType: $this->nodeTypeToString($node->returnType),
+                        isStatic: false,
+                        visibility: 'public',
+                        startLine: $node->getStartLine(),
+                        endLine: $node->getEndLine(),
+                    );
+                }
+
+                if ($node instanceof Stmt\ClassMethod) {
+                    $visibility = 'public';
+                    if ($node->isProtected()) {
+                        $visibility = 'protected';
+                    } elseif ($node->isPrivate()) {
+                        $visibility = 'private';
+                    }
+
+                    $this->functions[] = new ExtractedFunction(
+                        name: $node->name->name,
+                        className: $this->currentClass,
+                        namespace: $this->currentNamespace,
+                        params: $this->extractParams($node->params),
+                        returnType: $this->nodeTypeToString($node->returnType),
+                        isStatic: $node->isStatic(),
+                        visibility: $visibility,
+                        startLine: $node->getStartLine(),
+                        endLine: $node->getEndLine(),
+                    );
+                }
+
+                return null;
+            }
+
+            public function leaveNode(Node $node): ?int
+            {
+                if ($node instanceof Stmt\Class_ || $node instanceof Stmt\Trait_) {
+                    $this->currentClass = null;
+                }
+                return null;
+            }
+
+            /**
+             * @param array<Node\Param> $params
+             * @return array<array{name: string, type: ?string, default: bool}>
+             */
+            private function extractParams(array $params): array
+            {
+                $result = [];
+                foreach ($params as $param) {
+                    $result[] = [
+                        'name' => '$' . ($param->var instanceof Node\Expr\Variable ? $param->var->name : 'unknown'),
+                        'type' => $this->nodeTypeToString($param->type),
+                        'default' => $param->default !== null,
+                    ];
+                }
+                return $result;
+            }
+
+            private function nodeTypeToString(?Node $type): ?string
+            {
+                if ($type === null) {
+                    return null;
+                }
+                if ($type instanceof Node\Identifier) {
+                    return $type->name;
+                }
+                if ($type instanceof Node\Name) {
+                    return $type->toString();
+                }
+                if ($type instanceof Node\NullableType) {
+                    return '?' . $this->nodeTypeToString($type->type);
+                }
+                if ($type instanceof Node\UnionType) {
+                    return implode('|', array_map(
+                        fn($t) => $this->nodeTypeToString($t) ?? 'mixed',
+                        $type->types,
+                    ));
+                }
+                return null;
+            }
+        };
+
+        $traverser->addVisitor($visitor);
+        $traverser->traverse($stmts);
+
+        return $visitor->functions;
+    }
+}
+
+final readonly class ExtractedFunction
+{
+    /**
+     * @param array<array{name: string, type: ?string, default: bool}> $params
+     */
+    public function __construct(
+        public string $name,
+        public ?string $className,
+        public ?string $namespace,
+        public array $params,
+        public ?string $returnType,
+        public bool $isStatic,
+        public string $visibility,
+        public int $startLine,
+        public int $endLine,
+    ) {}
+
+    public function isMethod(): bool
+    {
+        return $this->className !== null;
+    }
+
+    public function getFullClassName(): ?string
+    {
+        if ($this->className === null) {
+            return null;
+        }
+
+        return $this->namespace !== null
+            ? $this->namespace . '\\' . $this->className
+            : $this->className;
+    }
+}
