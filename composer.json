@@ -3,7 +3,7 @@
     "description": "PHP Legacy Migration Orchestrator \u2014 analyze, test, and fix PHP 5.x\u20138.x codebases for modern PHP versions",
     "type": "library",
     "license": "GPL-3.0-or-later",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "keywords": [
         "php",
         "migration",
