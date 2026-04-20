@@ -81,7 +81,34 @@ final class AstIssueDetector implements AnalyzerInterface
         foreach ($visitors as $visitor) {
             $traverser->addVisitor($visitor);
         }
-        $traverser->traverse($ast);
+
+        // Raise xdebug nesting limit temporarily so deeply-nested ASTs
+        // (e.g. 200+ chained concatenations) don't hit the default 512 cap.
+        $prevNestingLevel = (string) ini_get('xdebug.max_nesting_level');
+        if ($prevNestingLevel !== '' && (int) $prevNestingLevel < 2048) {
+            ini_set('xdebug.max_nesting_level', '2048');
+        }
+
+        try {
+            $traverser->traverse($ast);
+        } catch (\Error $e) {
+            // Xdebug stack-depth exhaustion (or equivalent) — file is too deeply
+            // nested to traverse safely; report it and skip further analysis.
+            return [
+                new Issue(
+                    file: $filePath,
+                    line: 0,
+                    column: 0,
+                    severity: Severity::Warning,
+                    message: 'AST traversal aborted: expression nesting too deep. ' . $e->getMessage(),
+                    category: IssueCategory::Syntax,
+                ),
+            ];
+        } finally {
+            if ($prevNestingLevel !== '' && (int) $prevNestingLevel < 2048) {
+                ini_set('xdebug.max_nesting_level', $prevNestingLevel);
+            }
+        }
 
         $issues = [];
         foreach ($visitors as $visitor) {

@@ -100,7 +100,11 @@ final class ImplicitNullableFixer implements FixerInterface
             }
         });
 
-        $ast = $traverser->traverse($ast);
+        try {
+            $ast = $traverser->traverse($ast);
+        } catch (\Error) {
+            return $sourceCode;
+        }
         $printer = new Standard();
 
         return $printer->prettyPrintFile($ast);
