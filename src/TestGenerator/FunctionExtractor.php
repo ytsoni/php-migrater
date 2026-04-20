@@ -6,6 +6,7 @@ namespace Ylab\PhpMigrater\TestGenerator;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PhpParser\Node\Stmt;
@@ -63,6 +64,7 @@ final class FunctionExtractor
                         startLine: $node->getStartLine(),
                         endLine: $node->getEndLine(),
                     );
+                    return NodeVisitor::DONT_TRAVERSE_CHILDREN;
                 }
 
                 if ($node instanceof Stmt\ClassMethod) {
@@ -84,6 +86,7 @@ final class FunctionExtractor
                         startLine: $node->getStartLine(),
                         endLine: $node->getEndLine(),
                     );
+                    return NodeVisitor::DONT_TRAVERSE_CHILDREN;
                 }
 
                 return null;
@@ -139,7 +142,11 @@ final class FunctionExtractor
         };
 
         $traverser->addVisitor($visitor);
-        $traverser->traverse($stmts);
+        try {
+            $traverser->traverse($stmts);
+        } catch (\Throwable) {
+            // Return whatever functions were extracted before the error
+        }
 
         return $visitor->functions;
     }
