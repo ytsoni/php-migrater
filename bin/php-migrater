@@ -31,7 +31,7 @@ use Ylab\PhpMigrater\Command\ReportCommand;
 use Ylab\PhpMigrater\Command\ServeCommand;
 use Ylab\PhpMigrater\Command\TestGenerateCommand;
 
-$application = new Application('PHP Migrater', '0.2.2');
+$application = new Application('PHP Migrater', '0.2.3');
 
 $application->add(new AnalyzeCommand());
 $application->add(new FixCommand());
