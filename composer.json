@@ -3,6 +3,7 @@
     "description": "PHP Legacy Migration Orchestrator — analyze, test, and fix PHP 5.x–8.x codebases for modern PHP versions",
     "type": "library",
     "license": "GPL-3.0-or-later",
+    "version": "0.2.0",
     "keywords": ["php", "migration", "upgrade", "legacy", "rector", "compatibility", "refactoring"],
     "authors": [
         {
@@ -45,7 +46,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "1.1-dev"
+            "dev-main": "0.2-dev"
         }
     },
     "config": {
