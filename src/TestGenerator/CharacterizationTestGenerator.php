@@ -116,9 +116,10 @@ PHP;
      */
     private function generateClassTests(string $className, array $methods, string $filePath): ?GeneratedTest
     {
-        $shortClass = substr($className, strrpos($className, '\\') + 1);
+        $pos = strrpos($className, '\\');
+        $shortClass = $pos !== false ? substr($className, $pos + 1) : $className;
         $testClassName = $shortClass . 'CharacterizationTest';
-        $namespace = substr($className, 0, strrpos($className, '\\') ?: 0);
+        $namespace = $pos !== false ? substr($className, 0, $pos) : '';
 
         $publicMethods = array_filter($methods, fn($m) => $m->visibility === 'public' && $m->name !== '__construct');
 

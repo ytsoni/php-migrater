@@ -110,9 +110,10 @@ PHP;
      */
     private function generateClassTests(string $className, array $methods, string $filePath): GeneratedTest
     {
-        $shortClass = substr($className, strrpos($className, '\\') + 1);
+        $pos = strrpos($className, '\\');
+        $shortClass = $pos !== false ? substr($className, $pos + 1) : $className;
         $testClassName = $shortClass . 'BehavioralTest';
-        $namespace = substr($className, 0, strrpos($className, '\\') ?: 0);
+        $namespace = $pos !== false ? substr($className, 0, $pos) : '';
 
         $testMethods = '';
         foreach ($methods as $fn) {
@@ -149,7 +150,8 @@ PHP;
         $returnAssertion = $this->generateReturnAssertion($fn->returnType);
 
         if ($fn->isMethod() && $className !== null) {
-            $shortClass = substr($className, strrpos($className, '\\') + 1);
+            $pos = strrpos($className, '\\');
+            $shortClass = $pos !== false ? substr($className, $pos + 1) : $className;
             if ($fn->isStatic) {
                 $call = "\\{$className}::{$fn->name}(/* TODO: provide args */)";
             } else {
