@@ -6,6 +6,7 @@ namespace Ylab\PhpMigrater\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -53,17 +54,38 @@ class MigrateCommand extends Command
         $output->writeln('<info>Phase 1: Analyzing codebase...</info>');
         $analyzers = $registry->getAnalyzers();
         $finder = $config->createFinder();
+        $allFiles = iterator_to_array($finder);
         $files = [];
         $issuesByFile = [];
         $filesAnalyzed = 0;
 
-        foreach ($finder as $file) {
+        $output->writeln(sprintf('Found <info>%d</info> file(s) to analyze.', count($allFiles)));
+        $output->writeln('');
+
+        $progressBar = new ProgressBar($output, count($allFiles));
+        $progressBar->setFormat(
+            " %current%/%max% [%bar%] %percent:3s%% %elapsed:8s% / ~%estimated:-8s% remaining\n"
+            . " %memory:6s% | Issues: %issues% | File: %filename%\n"
+            . " Operation: %operation%"
+        );
+        $progressBar->setMessage('0', 'issues');
+        $progressBar->setMessage('Starting...', 'filename');
+        $progressBar->setMessage('Initializing', 'operation');
+        $progressBar->start();
+
+        $totalIssueCount = 0;
+
+        foreach ($allFiles as $file) {
             $filesAnalyzed++;
             $filePath = $file->getRealPath() ?: $file->getPathname();
             $files[] = $file;
 
+            $progressBar->setMessage($file->getRelativePathname(), 'filename');
+
             $allIssues = [];
             foreach ($analyzers as $analyzer) {
+                $progressBar->setMessage($analyzer->getName(), 'operation');
+                $progressBar->display();
                 $allIssues = array_merge($allIssues, $analyzer->analyze($file, $config));
             }
 
@@ -71,7 +93,17 @@ class MigrateCommand extends Command
                 $issuesByFile[$filePath] = $allIssues;
                 $report->addFileIssues($filePath, $allIssues);
             }
+
+            $totalIssueCount += count($allIssues);
+            $progressBar->setMessage((string) $totalIssueCount, 'issues');
+            $progressBar->advance();
         }
+
+        $progressBar->setMessage('Done', 'operation');
+        $progressBar->setMessage('Complete', 'filename');
+        $progressBar->finish();
+        $output->writeln('');
+        $output->writeln('');
 
         $report->setFilesAnalyzed($filesAnalyzed);
         $totalIssues = array_sum(array_map('count', $issuesByFile));
@@ -85,18 +117,44 @@ class MigrateCommand extends Command
             $writer = new TestWriter();
             $testsGenerated = 0;
 
+            $progressBar2 = new ProgressBar($output, count($files));
+            $progressBar2->setFormat(
+                " %current%/%max% [%bar%] %percent:3s%% %elapsed:8s% / ~%estimated:-8s% remaining\n"
+                . " Tests: %tests% | File: %filename%\n"
+                . " Generator: %operation%"
+            );
+            $progressBar2->setMessage('0', 'tests');
+            $progressBar2->setMessage('Starting...', 'filename');
+            $progressBar2->setMessage('Initializing', 'operation');
+            $progressBar2->start();
+
             foreach ($files as $file) {
                 $sourceCode = file_get_contents($file->getRealPath() ?: $file->getPathname());
                 if ($sourceCode === false) {
+                    $progressBar2->advance();
                     continue;
                 }
 
+                $progressBar2->setMessage($file->getRelativePathname(), 'filename');
+
                 foreach ($generators as $generator) {
+                    $progressBar2->setMessage($generator->getName(), 'operation');
+                    $progressBar2->display();
+
                     $tests = $generator->generate($sourceCode, $file->getRealPath() ?: $file->getPathname());
                     $written = $writer->write($tests, $output);
                     $testsGenerated += count($written);
                 }
+
+                $progressBar2->setMessage((string) $testsGenerated, 'tests');
+                $progressBar2->advance();
             }
+
+            $progressBar2->setMessage('Done', 'operation');
+            $progressBar2->setMessage('Complete', 'filename');
+            $progressBar2->finish();
+            $output->writeln('');
+            $output->writeln('');
 
             $report->setTestsGenerated($testsGenerated);
             $output->writeln(sprintf('  Generated %d test files.', $testsGenerated));

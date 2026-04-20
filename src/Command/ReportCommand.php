@@ -6,6 +6,7 @@ namespace Ylab\PhpMigrater\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -46,22 +47,55 @@ class ReportCommand extends Command
         $finder = $config->createFinder();
 
         $report = new MigrationReport($config->getSourceVersion(), $config->getTargetVersion());
-        $filesAnalyzed = 0;
 
         $output->writeln('<info>Analyzing for report...</info>');
 
-        foreach ($finder as $file) {
+        $files = iterator_to_array($finder);
+        $totalFiles = count($files);
+        $filesAnalyzed = 0;
+        $totalIssues = 0;
+
+        $output->writeln(sprintf('Found <info>%d</info> file(s) to analyze.', $totalFiles));
+        $output->writeln('');
+
+        $progressBar = new ProgressBar($output, $totalFiles);
+        $progressBar->setFormat(
+            " %current%/%max% [%bar%] %percent:3s%% %elapsed:8s% / ~%estimated:-8s% remaining\n"
+            . " %memory:6s% | Issues: %issues% | File: %filename%\n"
+            . " Operation: %operation%"
+        );
+        $progressBar->setMessage('0', 'issues');
+        $progressBar->setMessage('Starting...', 'filename');
+        $progressBar->setMessage('Initializing', 'operation');
+        $progressBar->start();
+
+        foreach ($files as $file) {
             $filesAnalyzed++;
             $allIssues = [];
 
+            $progressBar->setMessage($file->getRelativePathname(), 'filename');
+
             foreach ($analyzers as $analyzer) {
+                $progressBar->setMessage($analyzer->getName(), 'operation');
+                $progressBar->display();
                 $allIssues = array_merge($allIssues, $analyzer->analyze($file, $config));
             }
+
+            $totalIssues += count($allIssues);
+            $progressBar->setMessage((string) $totalIssues, 'issues');
 
             if (!empty($allIssues)) {
                 $report->addFileIssues($file->getRealPath() ?: $file->getPathname(), $allIssues);
             }
+
+            $progressBar->advance();
         }
+
+        $progressBar->setMessage('Done', 'operation');
+        $progressBar->setMessage('Complete', 'filename');
+        $progressBar->finish();
+        $output->writeln('');
+        $output->writeln('');
 
         $report->setFilesAnalyzed($filesAnalyzed);
         $report->finish();

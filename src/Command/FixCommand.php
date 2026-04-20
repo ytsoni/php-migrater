@@ -6,6 +6,7 @@ namespace Ylab\PhpMigrater\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -45,24 +46,54 @@ class FixCommand extends Command
         // Analyze first
         $analyzers = $registry->getAnalyzers();
         $finder = $config->createFinder();
+        $allFiles = iterator_to_array($finder);
         $files = [];
         $issuesByFile = [];
 
         $output->writeln('<info>Analyzing files before fixing...</info>');
+        $output->writeln(sprintf('Found <info>%d</info> file(s) to analyze.', count($allFiles)));
+        $output->writeln('');
 
-        foreach ($finder as $file) {
+        $progressBar = new ProgressBar($output, count($allFiles));
+        $progressBar->setFormat(
+            " %current%/%max% [%bar%] %percent:3s%% %elapsed:8s% / ~%estimated:-8s% remaining\n"
+            . " %memory:6s% | Issues: %issues% | File: %filename%\n"
+            . " Operation: %operation%"
+        );
+        $progressBar->setMessage('0', 'issues');
+        $progressBar->setMessage('Starting...', 'filename');
+        $progressBar->setMessage('Initializing', 'operation');
+        $progressBar->start();
+
+        $issueCount = 0;
+
+        foreach ($allFiles as $file) {
             $filePath = $file->getRealPath() ?: $file->getPathname();
             $files[] = $file;
 
+            $progressBar->setMessage($file->getRelativePathname(), 'filename');
+
             $fileIssues = [];
             foreach ($analyzers as $analyzer) {
+                $progressBar->setMessage($analyzer->getName(), 'operation');
+                $progressBar->display();
                 $fileIssues = array_merge($fileIssues, $analyzer->analyze($file, $config));
             }
 
             if (!empty($fileIssues)) {
                 $issuesByFile[$filePath] = $fileIssues;
             }
+
+            $issueCount += count($fileIssues);
+            $progressBar->setMessage((string) $issueCount, 'issues');
+            $progressBar->advance();
         }
+
+        $progressBar->setMessage('Done', 'operation');
+        $progressBar->setMessage('Complete', 'filename');
+        $progressBar->finish();
+        $output->writeln('');
+        $output->writeln('');
 
         $totalIssues = array_sum(array_map('count', $issuesByFile));
         $output->writeln(sprintf('Found %d issues in %d files.', $totalIssues, count($issuesByFile)));

@@ -6,6 +6,7 @@ namespace Ylab\PhpMigrater\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -54,7 +55,6 @@ class AnalyzeCommand extends Command
         }
 
         $report = new MigrationReport($config->getSourceVersion(), $config->getTargetVersion());
-        $filesAnalyzed = 0;
 
         $output->writeln('<info>Analyzing codebase...</info>');
         $output->writeln(sprintf(
@@ -64,25 +64,56 @@ class AnalyzeCommand extends Command
         ));
         $output->writeln('');
 
-        foreach ($finder as $file) {
+        // Collect files upfront so we know the total count for progress/ETA
+        $files = iterator_to_array($finder);
+        $totalFiles = count($files);
+        $filesAnalyzed = 0;
+        $totalIssues = 0;
+
+        $output->writeln(sprintf('Found <info>%d</info> file(s) to analyze.', $totalFiles));
+        $output->writeln('');
+
+        $progressBar = new ProgressBar($output, $totalFiles);
+        $progressBar->setFormat(
+            " %current%/%max% [%bar%] %percent:3s%% %elapsed:8s% / ~%estimated:-8s% remaining\n"
+            . " %memory:6s% | Issues: %issues% | File: %filename%\n"
+            . " Operation: %operation%"
+        );
+        $progressBar->setMessage('0', 'issues');
+        $progressBar->setMessage('Starting...', 'filename');
+        $progressBar->setMessage('Initializing', 'operation');
+        $progressBar->start();
+
+        foreach ($files as $file) {
             $filesAnalyzed++;
             $allIssues = [];
+            $relativePath = $file->getRelativePathname();
+
+            $progressBar->setMessage($relativePath, 'filename');
 
             foreach ($analyzers as $analyzer) {
+                $progressBar->setMessage($analyzer->getName(), 'operation');
+                $progressBar->display();
+
                 $issues = $analyzer->analyze($file, $config);
                 $allIssues = array_merge($allIssues, $issues);
             }
+
+            $totalIssues += count($allIssues);
+            $progressBar->setMessage((string) $totalIssues, 'issues');
 
             if (!empty($allIssues)) {
                 $report->addFileIssues($file->getRealPath() ?: $file->getPathname(), $allIssues);
             }
 
-            if ($output->isVerbose()) {
-                $count = count($allIssues);
-                $status = $count > 0 ? "<comment>{$count} issues</comment>" : '<info>OK</info>';
-                $output->writeln("  {$file->getRelativePathname()} ... {$status}");
-            }
+            $progressBar->advance();
         }
+
+        $progressBar->setMessage('Done', 'operation');
+        $progressBar->setMessage('Complete', 'filename');
+        $progressBar->finish();
+        $output->writeln('');
+        $output->writeln('');
 
         $report->setFilesAnalyzed($filesAnalyzed);
         $report->finish();
